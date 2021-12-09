@@ -18,6 +18,7 @@ function App() {
   const [choiceOne, setChoiceOne] = useState(null);
   const [choiceTwo, setChoiceTwo] = useState(null);
   const [disabled, setDisabled] = useState(false);
+  const [isEndGame, setIsEndGame] = useState(false)
 
   // shuffle cards
   const shuffleCards = () => {
@@ -28,20 +29,20 @@ function App() {
 
       setChoiceOne(null);
       setChoiceTwo(null);
+      setIsEndGame(false);
       setCards(shuffledCards);
       setTurns(0);
   }
 
   // handle a choice
   const handleChoice = (card) => {
-
     choiceOne ? setChoiceTwo(card) : setChoiceOne(card);
-
   }
 
   const resetTurn = () => {
     setChoiceOne(null);
     setChoiceTwo(null);
+    setIsEndGame();
     setTurns(prevTurns => prevTurns + 1);
     setDisabled(false);
   }
@@ -66,7 +67,7 @@ function App() {
         setTimeout(() => {
           resetTurn();                 
         }, 1000);
-      }
+      }     
     }
 
   }, [choiceOne, choiceTwo])
@@ -77,25 +78,53 @@ function App() {
     shuffleCards();
   }, [])
 
+  // check if all cards ar matched
+  useEffect(() => {
+    let isEnd = true;
+    cards.forEach(card => {
+      if(card.matched === false) {
+        isEnd = false;
+      }
+    })
+    
+    if(isEnd) {
+      setIsEndGame(true);
+    }
+  
+  },[cards]) 
+
+
   return (
     <div className="App">
       <h1>Magic Match</h1>
       <button onClick={shuffleCards}>Start Game</button>
 
-      <div className="card-grid">
-        {cards.map(card => (
-          
-          <SingleCard 
-            key={card.id} 
-            card={card}
-            handleChoice={handleChoice}  
-            flipped={card === choiceOne || card === choiceTwo || card.matched}
-            disabled={disabled}
-          />
+      {
+        !isEndGame 
+        ? 
+        <>
+          <div className="card-grid">
+          {cards.map(card => (
+            
+            <SingleCard 
+              key={card.id} 
+              card={card}
+              handleChoice={handleChoice}  
+              flipped={card === choiceOne || card === choiceTwo || card.matched}
+              disabled={disabled}
+            />
 
-        ))}
-      </div>
-      <p>Turns: {turns}</p>
+          ))}
+        </div>
+        <p>Turns: {turns}</p>
+        
+        </>
+        : 
+        <>
+          <h1>End game</h1>
+          <p>Your Score: {turns}</p>
+        </>
+      }
 
     </div>
   );
